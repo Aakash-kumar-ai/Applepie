@@ -25,28 +25,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Find and Build APK
-        run: |
-          echo "Searching for Gradle wrapper..."
-          GRADLEW=$(find project -type f -name gradlew -print -quit)
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew not found!"
-            echo "Project files:"
-            find project -maxdepth 4 -type f | head -100
-            exit 1
-          fi
-
-          echo "Found Gradle wrapper: $GRADLEW"
-
-          chmod +x "$GRADLEW"
-          cd "$(dirname "$GRADLEW")"
-
-          ./gradlew assembleDebug --no-daemon
+      - name: Build APK
+        working-directory: project/ApplePieAndroid
+        run: gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ApplePie-debug-apk
-          path: project/**/build/outputs/apk/debug/app-debug.apk
+          path: project/ApplePieAndroid/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
